@@ -321,7 +321,11 @@ export default function Home() {
             SquareSize={squareSize}
             Map={mapPicture}
           />
-          <SpritesSettings />
+          <SpritesSettings
+            NumberColumns={numberColumns}
+            NumberRows={numberRows}
+            SquareSize={squareSize}
+          />
         </SpriteContext.Provider>
       </Flex>
     </>

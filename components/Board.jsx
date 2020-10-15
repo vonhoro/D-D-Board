@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useContext } from "react";
 import { SpriteContext } from "../context/SpriteContext";
 import { Square } from "./Square";
 import { moveSprite } from "../utils/moveSprite";
-import background from "../sprites/try.jpg";
 import { shadowedSquaresCoordinates } from "../utils/shadowedSquaresCoordinates";
 import io from "socket.io-client";
 import { Grid } from "@chakra-ui/core";
@@ -99,7 +98,7 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
   const putSprite = (e, index, type) => {
     // this conditios puts a new sprite on the board
 
-    if (!sprite.preview) {
+    if (sprite.context === "map") {
       const colorType =
         sprite.type === "neutral"
           ? colors.neutral
@@ -123,7 +122,7 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
       setOrderSprites(orderSprites + 1);
       setNumberArray(numberArray);
       setSquareWasClicked(false);
-      setSprite({ ...sprite, preview: true });
+      setSprite({ ...sprite, context: "none" });
       // socket.emit("Board change", numberArray);
       return;
     }
@@ -167,7 +166,17 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
 
   const rotateSprite = (e, index) => {
     e.preventDefault();
-    const spriteChange = moveSprite(numberArray[index], e.key);
+    const spriteWidth = parseInt(
+      spriteRef.current[index].style.width.replace("px", "")
+    );
+    const spriteHeigth = parseInt(
+      spriteRef.current[index].style.height.replace("px", "")
+    );
+    let spriteInformation = {
+      ...numberArray[index],
+      size: [spriteWidth / SquareSize, spriteHeigth / SquareSize],
+    };
+    const spriteChange = moveSprite(spriteInformation, e.key);
     if (spriteChange) {
       numberArray[index] = spriteChange;
       setSquareWasClicked(false);
@@ -180,7 +189,11 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
   // esto da un preview del area que ocupara el sprite
 
   const squaresPreview = (e, coordinates) => {
-    if (!squareWasClicked && sprite.preview) return;
+    if (
+      !squareWasClicked &&
+      (sprite.context === "none" || sprite.context === "settings")
+    )
+      return;
     if (spriteCondition.clicked) {
       const coordinatesToChange = shadowedSquaresCoordinates(
         numberArray[spriteCondition.position].size[0],
@@ -281,7 +294,19 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
                       square.spriteColor = square.spriteColorBlur;
                     }}
                     onClick={(e) => putSprite(e, index, "sprite")}
-                    onContextMenu={(e) => removeSprite(e, index)}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      setSprite({
+                        content: square.content,
+                        horizontalMultplier: square.size[0],
+                        verticalMultiplier: square.size[1],
+                        context: "settings",
+                        type: "neutral",
+                        reference: e.target,
+                      });
+
+                      //removeSprite(e, index)
+                    }}
                   />
                 ) : (
                   <Square

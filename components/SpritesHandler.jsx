@@ -109,18 +109,11 @@ export const SpritesHandler = ({
       content: sprites[index].content,
       horizontalMultiplier: sprites[index].horizontalMultiplier,
       verticalMultiplier: sprites[index].verticalMultiplier,
-      preview: false,
+      context: "map",
       type: "neutral",
+      reference: "",
     });
   };
-
-  React.useEffect(
-    (e) => {
-      console.log(window.screen.height);
-      console.log(spritesFileList);
-    },
-    [spritesFileList]
-  );
 
   const modal = (
     <>
@@ -225,7 +218,6 @@ export const SpritesHandler = ({
                       },
                       ...newSprites,
                     ];
-                    console.log(answer);
                   }
                   setUploading(false);
                   setSpritesSelected(false);
@@ -252,7 +244,6 @@ export const SpritesHandler = ({
     </>
   );
 
-  // onMouseLeave={onMouseLeave}
   return (
     <>
       {spriteUploader && modal}

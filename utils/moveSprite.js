@@ -1,7 +1,6 @@
-
-
 export const moveSprite = (SpriteArray, Key) => {
   const spriteArray = SpriteArray;
+  console.log(spriteArray);
   const key = Key;
   const xAxis = spriteArray.size[0];
   const yAxis = spriteArray.size[1];
