@@ -11,8 +11,9 @@ export const Square = ({
   return (
     <Box
       borderColor="gray.100"
-      border="0.01em"
+      border="1px"
       borderStyle="solid"
+      boxSizing="border-box"
       style={{
         height: Height,
         width: Width,

@@ -45,7 +45,7 @@ export default function Home() {
   const [numberRows, setNumberRows] = React.useState(10);
   const [numberColumns, setNumberColums] = React.useState(10);
   const [showOptions, setShowOptions] = React.useState(true);
-  const [squareSize, setSquareSize] = React.useState(40);
+  const [squareSize, setSquareSize] = React.useState(50);
   const [showBoardOptions, setShowBoardOptions] = React.useState(null);
   const [showSpriteSelection, setShowSpriteSelection] = React.useState(null);
   const [mapPrev, setMapPrev] = React.useState(null);
@@ -70,24 +70,8 @@ export default function Home() {
         setShowBoardOptions(false);
       }}
     >
-      <Text as="em" color="white" mb="1vh">
-        Adjust the size of each square
-      </Text>
-
-      <Slider
-        bg="blue.100"
-        defaultValue={40}
-        min={10}
-        max={100}
-        step={10}
-        onChange={(value) => setSquareSize(value)}
-      >
-        <SliderTrack />
-        <SliderFilledTrack />
-        <SliderThumb />
-      </Slider>
       <Text as="em" color="white" mt="1vh">
-        Adjust the size of the board based on number of squares
+        Adjust the map size
       </Text>
 
       <Flex justify="space-around" width="100%">

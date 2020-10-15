@@ -4,7 +4,7 @@ import { Square } from "./Square";
 import { moveSprite } from "../utils/moveSprite";
 import { shadowedSquaresCoordinates } from "../utils/shadowedSquaresCoordinates";
 import io from "socket.io-client";
-import { Grid } from "@chakra-ui/core";
+import { Grid, Image } from "@chakra-ui/core";
 // const socket = io("https://rocky-hamlet-30601.herokuapp.com");
 
 const colors = {
@@ -166,18 +166,23 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
 
   const rotateSprite = (e, index) => {
     e.preventDefault();
-    const spriteWidth = parseInt(
-      spriteRef.current[index].style.width.replace("px", "")
-    );
-    const spriteHeigth = parseInt(
-      spriteRef.current[index].style.height.replace("px", "")
-    );
+    const spriteWidth = spriteRef.current[index].width;
+    // parseInt(
+    // spriteRef.current[index].style.width.replace("px", "")
+    // );
+    const spriteHeigth = spriteRef.current[index].height;
+    // parseInt(
+    // spriteRef.current[index].style.height.replace("px", "")
+    // );
     let spriteInformation = {
       ...numberArray[index],
       size: [spriteWidth / SquareSize, spriteHeigth / SquareSize],
     };
     const spriteChange = moveSprite(spriteInformation, e.key);
     if (spriteChange) {
+      spriteRef.current[
+        index
+      ].style.transform = `rotate(${spriteChange.rotation}deg) translate(${spriteChange.translation[0]}%,${spriteChange.translation[1]}%)`;
       numberArray[index] = spriteChange;
       setSquareWasClicked(false);
       setRotatingSprite(!rotatingSprite);
@@ -264,38 +269,44 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
         width={`${NumberColumns * SquareSize}px`}
         color="none"
         templateColumns={numberColumns}
+        boxSizing="border-box"
       >
         {numberArray ? (
           <>
             {numberArray.map((square, index) => (
               <>
                 {square.content !== "" ? (
-                  <img
+                  <Image
                     ref={spriteRefUse(index)}
                     className="sprite"
                     src={square.content}
                     alt="sprite"
                     key={index + 100}
-                    onFocus={(e) => (square.spriteColor = colors.spriteFocus)}
-                    tabIndex={index}
-                    style={{
-                      width: `${SquareSize * square.size[0]}px`,
-                      height: `${SquareSize * square.size[1]}px`,
-                      gridArea: `${square.coordinate[0]} / ${square.coordinate[1]} /span ${NumberRows} / span ${NumberColumns}`,
-                      transform: `rotate(${square.rotation}deg) translate(${square.translation[0]}%,${square.translation[1]}%)`,
-                      boxShadow: `${square.ofSet[0]}em ${square.ofSet[1]}em 0 0 ${colors.direction} inset`,
-                      backgroundColor: `${square.spriteColor}`,
-                      zIndex: 2 + square.order,
+                    onFocus={(e) => {
+                      spriteRef.current[index].style.border = "white solid 4px";
+                      // square.spriteColor = colors.spriteFocus
                     }}
+                    tabIndex={index}
+                    width="50px"
+                    height="50px"
+                    gridArea={`${square.coordinate[0]} / ${square.coordinate[1]} / span ${NumberRows} / span ${NumberColumns}`}
+                    boxShadow={`${square.ofSet[0]}em ${square.ofSet[1]}em 0 0 ${colors.direction} inset`}
+                    bg={colors.neutral}
+                    zIndex={2 + square.order}
                     onKeyUp={(e) => {
                       rotateSprite(e, index);
                     }}
                     onBlur={(e) => {
-                      square.spriteColor = square.spriteColorBlur;
+                      spriteRef.current[index].style.border = "";
                     }}
-                    onClick={(e) => putSprite(e, index, "sprite")}
+                    onClick={(e) => {
+                      console.log(e.target);
+
+                      putSprite(e, index, "sprite");
+                    }}
                     onContextMenu={(e) => {
                       e.preventDefault();
+                      e.target.blur();
                       setSprite({
                         content: square.content,
                         horizontalMultplier: square.size[0],
