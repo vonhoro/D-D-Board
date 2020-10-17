@@ -251,7 +251,7 @@ export default function Home() {
                         );
                         setUploading(true);
                         const answer = await axios.post(
-                          "https://api.imgbb.com/1/upload?expiration=300&key=0f6654c0cbf82ce0c4e080de1c4e7d00",
+                          "https://api.imgbb.com/1/upload?expiration=86400&key=0f6654c0cbf82ce0c4e080de1c4e7d00",
                           formData
                         );
                         setUploading(false);
