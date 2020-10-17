@@ -82,7 +82,7 @@ export const SpritesHandler = ({
   const [importSprite, setImportSprite] = useState(false);
   const [spriteUploader, setSpriteUploader] = useState(null);
   const [spritesToUpload, setSpritesToUpload] = useState([]);
-  const [spritesSelected, setSpritesSelected] = useState(false);
+
   const [uploading, setUploading] = useState(false);
   const [spritesFileList, setSpritesFileList] = useState([]);
   useEffect(() => {
@@ -124,8 +124,10 @@ export const SpritesHandler = ({
         width="500%"
         height="500%"
         zIndex="1000"
+        onMouseOver={onMouseOver}
       />
       <Flex
+        onMouseOver={onMouseOver}
         maxH={`${window.screen.height - window.screen.height * 0.25}px`}
         overflowY="scroll"
         align="center"
@@ -149,6 +151,10 @@ export const SpritesHandler = ({
             right={4}
             top={4}
             onClick={(e) => {
+              setSpritesToUpload([]);
+
+              setUploading(false);
+              setSpritesFileList([]);
               setSpriteUploader(null);
             }}
             zIndex={"1051"}
@@ -184,17 +190,18 @@ export const SpritesHandler = ({
           <Flex justify="center" style={{ marginBottom: "20px" }}>
             <Stack spacing={2} isInline>
               <Button
-                variantColor={spritesSelected ? "gray" : "blue"}
+                variantColor={"blue"}
+                isLoading={uploading}
+                bg="blue.500"
                 children="Select sprites"
                 onClick={(e) => {
-                  // if (spritesSelected) return;
-
                   upload.click();
                 }}
               />
               <Button
                 children="Upload"
                 isLoading={uploading}
+                bg="blue.500"
                 variantColor="blue"
                 onClick={async (e) => {
                   let newSprites = sprites;
@@ -220,7 +227,7 @@ export const SpritesHandler = ({
                     ];
                   }
                   setUploading(false);
-                  setSpritesSelected(false);
+
                   setSprites(newSprites);
                   setSpriteUploader(null);
                   setSpritesToUpload([]);
@@ -228,11 +235,12 @@ export const SpritesHandler = ({
               />
               <Button
                 children="Cancel"
+                bg="blue.500"
                 variantColor="blue"
                 onClick={(e) => {
                   setSpritesToUpload([]);
                   setSpriteUploader(null);
-                  setSpritesSelected(false);
+
                   setUploading(false);
                   setSpritesFileList([]);
                 }}
@@ -285,7 +293,7 @@ export const SpritesHandler = ({
               ];
             }
             const newwSprites = Array.from(upload.files);
-            setSpritesSelected(true);
+
             setSpritesToUpload(newSprites);
             setSpritesFileList([...spritesFileList, ...newwSprites]);
           }}
@@ -294,13 +302,14 @@ export const SpritesHandler = ({
           width="50px"
           height="50px"
           size="lg"
-          isRound
           my={"10px"}
-          color="blue.500"
-          variantColor="green"
+          color="white"
+          variantColor="blue"
           aria-label="Add an Sprite"
           icon="add"
-          onClick={(e) => setSpriteUploader(true)}
+          onClick={(e) => {
+            setSpriteUploader(true);
+          }}
         />
         {sprites.length === 0 ? (
           <></>

@@ -7,6 +7,7 @@ export const Square = ({
   Color,
   onClick,
   onMouseEnter,
+  onMouseLeave,
 }) => {
   return (
     <Box
@@ -22,6 +23,7 @@ export const Square = ({
       }}
       onClick={onClick}
       onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       {""}
     </Box>

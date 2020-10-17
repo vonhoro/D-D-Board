@@ -65,17 +65,17 @@ export const SpritesSettings = ({ NumberColumns, NumberRows, SquareSize }) => {
     console.log(sprite.reference);
   }, [sprite]);
 
-  React.useEffect(() => console.log("updating"), [update]);
-
   return (
     <Grid
       pos="fixed"
-      opacity={0.8}
+      opacity={0.9}
       bottom={0}
-      width="full"
+      width="30vw"
       height="30vh"
-      bg="green.500"
-      templateColumns="repeat(5,1fr)"
+      bg="gray.500"
+      p="1rem"
+      templateColumns="20vw 10vw"
+      zIndex={1999}
     >
       <Flex direction="column" align="center" width="full">
         <Image
@@ -88,9 +88,73 @@ export const SpritesSettings = ({ NumberColumns, NumberRows, SquareSize }) => {
           }}
         />
 
-        <Flex align="space-around" justify="space-around">
-          <FormControl>
-            <FormLabel>Rows </FormLabel>
+        <Flex justify="space-evenly" align="center" width="full">
+          <Flex textAlign="center" direction="column" justify="center">
+            <Text>Columns </Text>
+            <NumberInput
+              step={1}
+              size="sm"
+              width="5vw"
+              min={1}
+              defaultValue={1}
+              max={NumberColumns}
+            >
+              <NumberInputField
+                value={
+                  spriteInformation.reference
+                    ? parseInt(sprite.reference.width) / SquareSize
+                    : 1
+                }
+                focusBorderColor="red.200"
+              />
+              <NumberInputStepper>
+                <NumberIncrementStepper
+                  onClick={(e) => {
+                    let value = spriteInformation.reference
+                      ? parseInt(sprite.reference.width) / SquareSize
+                      : 1;
+                    value += 1;
+                    if (
+                      value < 1 ||
+                      value > NumberColumns ||
+                      !spriteInformation.reference
+                    )
+                      return;
+                    spriteInformation.reference.style.width = `${
+                      value * SquareSize
+                    }px`;
+                    setUpdate(!update);
+                  }}
+                  bg="green.200"
+                  _active={{ bg: "green.300" }}
+                  children="+"
+                />
+                <NumberDecrementStepper
+                  onClick={(e) => {
+                    let value = spriteInformation.reference
+                      ? parseInt(sprite.reference.width) / SquareSize
+                      : 1;
+                    value -= 1;
+                    if (
+                      value < 1 ||
+                      value > NumberColumns ||
+                      !spriteInformation.reference
+                    )
+                      return;
+                    spriteInformation.reference.style.width = `${
+                      value * SquareSize
+                    }px`;
+                    setUpdate(!update);
+                  }}
+                  bg="pink.200"
+                  _active={{ bg: "pink.300" }}
+                  children="-"
+                />
+              </NumberInputStepper>
+            </NumberInput>
+          </Flex>
+          <Flex textAlign="center" direction="column" justify="center">
+            <Text>Rows </Text>
             <NumberInput
               step={1}
               size="sm"
@@ -102,7 +166,7 @@ export const SpritesSettings = ({ NumberColumns, NumberRows, SquareSize }) => {
               <NumberInputField
                 value={
                   spriteInformation.reference
-                    ? parseInt(sprite.reference.height + 8) / SquareSize
+                    ? parseInt(sprite.reference.height) / SquareSize
                     : 1
                 }
                 focusBorderColor="red.200"
@@ -111,7 +175,7 @@ export const SpritesSettings = ({ NumberColumns, NumberRows, SquareSize }) => {
                 <NumberIncrementStepper
                   onClick={(e) => {
                     let value = spriteInformation.reference
-                      ? parseInt(sprite.reference.height + 8) / SquareSize
+                      ? parseInt(sprite.reference.height) / SquareSize
                       : 1;
                     value += 1;
                     if (
@@ -132,7 +196,7 @@ export const SpritesSettings = ({ NumberColumns, NumberRows, SquareSize }) => {
                 <NumberDecrementStepper
                   onClick={(e) => {
                     let value = spriteInformation.reference
-                      ? parseInt(sprite.reference.height + 8) / SquareSize
+                      ? parseInt(sprite.reference.height) / SquareSize
                       : 1;
                     value -= 1;
                     if (
@@ -152,76 +216,11 @@ export const SpritesSettings = ({ NumberColumns, NumberRows, SquareSize }) => {
                 />
               </NumberInputStepper>
             </NumberInput>
-          </FormControl>
-
-          <FormControl>
-            <FormLabel>Columns </FormLabel>
-            <NumberInput
-              step={1}
-              size="sm"
-              width="5vw"
-              ml="25%"
-              min={1}
-              defaultValue={1}
-              max={NumberColumns}
-            >
-              <NumberInputField
-                value={
-                  spriteInformation.reference
-                    ? parseInt(sprite.reference.width + 8) / SquareSize
-                    : 1
-                }
-                focusBorderColor="red.200"
-              />
-              <NumberInputStepper>
-                <NumberIncrementStepper
-                  onClick={(e) => {
-                    let value = spriteInformation.reference
-                      ? parseInt(sprite.reference.width + 8) / SquareSize
-                      : 1;
-                    value += 1;
-                    if (
-                      value < 1 ||
-                      value > NumberColumns ||
-                      !spriteInformation.reference
-                    )
-                      return;
-                    spriteInformation.reference.style.width = `${
-                      value * SquareSize
-                    }px`;
-                    setUpdate(!update);
-                  }}
-                  bg="green.200"
-                  _active={{ bg: "green.300" }}
-                  children="+"
-                />
-                <NumberDecrementStepper
-                  onClick={(e) => {
-                    let value = spriteInformation.reference
-                      ? parseInt(sprite.reference.width + 8) / SquareSize
-                      : 1;
-                    value -= 1;
-                    if (
-                      value < 1 ||
-                      value > NumberColumns ||
-                      !spriteInformation.reference
-                    )
-                      return;
-                    spriteInformation.reference.style.width = `${
-                      value * SquareSize
-                    }px`;
-                    setUpdate(!update);
-                  }}
-                  bg="pink.200"
-                  _active={{ bg: "pink.300" }}
-                  children="-"
-                />
-              </NumberInputStepper>
-            </NumberInput>
-          </FormControl>
+          </Flex>
         </Flex>
       </Flex>
       <Flex direction="column" justify="center">
+        <Text>Type </Text>
         <RadioGroup
           defaultValue="neutral"
           spacing={2}
@@ -240,7 +239,7 @@ export const SpritesSettings = ({ NumberColumns, NumberRows, SquareSize }) => {
                 spriteInformation.reference.style.backgroundColor = colors.ally;
             }
           }}
-          color="blue.200"
+          color="blue.700"
           variantColor="blue"
         >
           <Radio value="neutral"> Neutral</Radio>

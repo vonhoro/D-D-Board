@@ -60,86 +60,73 @@ export default function Home() {
       width="60vw"
       pos="fixed"
       zIndex={50}
-      opacity={0.6}
+      opacity={0.8}
       top="0"
       align="center"
       bg="gray.500"
       rounded="1em"
       p={4}
+      textAlign="center"
       onMouseLeave={(e) => {
         setShowBoardOptions(false);
       }}
     >
-      <Text as="em" color="white" mt="1vh">
-        Adjust the map size
-      </Text>
+      <Text color="black">Board Settings</Text>
 
-      <Flex justify="space-around" width="100%">
-        <Flex direction="column" align="center">
-          <FormControl>
-            <FormLabel htmlFor="number"> Number of Columns</FormLabel>
-            <NumberInput
-              name="number"
-              size="sm"
-              width="5vw"
-              ml="25%"
-              defaultValue={numberColumns}
-              min={10}
-              onChange={(value) => setNumberColums(value)}
-              max={100}
-            >
-              <NumberInputField focusBorderColor="red.200" />
-              <NumberInputStepper>
-                <NumberIncrementStepper
-                  bg="green.200"
-                  _active={{ bg: "green.300" }}
-                  children="+"
-                />
-                <NumberDecrementStepper
-                  bg="pink.200"
-                  _active={{ bg: "pink.300" }}
-                  children="-"
-                />
-              </NumberInputStepper>
-            </NumberInput>
-          </FormControl>
+      <Flex justify="center" align="center" width="full" wrap="wrap">
+        <Flex direction="column" textAlign="center" align="center">
+          <Text color="black"> Columns</Text>
+
+          <NumberInput
+            name="number"
+            size="sm"
+            width="30%"
+            defaultValue={numberColumns}
+            min={10}
+            onChange={(value) => setNumberColums(value)}
+            max={100}
+          >
+            <NumberInputField
+              boderColor="blue.900"
+              color="blue.400"
+              focusBorderColor="red.200"
+            />
+            <NumberInputStepper>
+              <NumberIncrementStepper children="+" />
+              <NumberDecrementStepper children="-" />
+            </NumberInputStepper>
+          </NumberInput>
         </Flex>
-
         <Button
-          mt="3.5vh"
-          variant="ghost"
-          bg="green.200"
-          variantColor="green"
-          children={"Upload map background"}
+          bg="blue.200"
+          mt="2.5%"
+          variantColor="blue"
+          children={"Background"}
           onClick={(e) => setMapUploadModal(true)}
         />
 
-        <FormControl>
-          <FormLabel htmlFor="number"> Number of Rows</FormLabel>
+        <Flex direction="column" textAlign="center" align="center">
+          <Text>Rows</Text>
           <NumberInput
             size="sm"
-            width="5vw"
-            ml="25%"
+            width="30%"
             defaultValue={numberRows}
             min={10}
             onChange={(value) => setNumberRows(value)}
             max={100}
           >
-            <NumberInputField focusBorderColor="red.200" />
+            <NumberInputField
+              boderColor="blue.900"
+              color="blue.400"
+              focusBorderColor="red.200"
+              focusBorderColor="red.200"
+            />
             <NumberInputStepper>
-              <NumberIncrementStepper
-                bg="green.200"
-                _active={{ bg: "green.300" }}
-                children="+"
-              />
-              <NumberDecrementStepper
-                bg="pink.200"
-                _active={{ bg: "pink.300" }}
-                children="-"
-              />
+              <NumberIncrementStepper children="+" />
+              <NumberDecrementStepper children="-" />
             </NumberInputStepper>
           </NumberInput>
-        </FormControl>
+        </Flex>
       </Flex>
     </Flex>
   );
@@ -152,12 +139,14 @@ export default function Home() {
       </Head>
       {/* To show On top  */}
       <Flex
+        mt="6%"
         direction="column"
         align="center"
         justify="center"
-        bg="red.200"
-        width="100vw"
-        height="100vh"
+        width="full"
+        height="full"
+        wrap="wrap"
+        bg="gray.700"
       >
         <input
           type="file"
@@ -165,39 +154,27 @@ export default function Home() {
           style={{ display: "none" }}
           onChange={(e) => {
             e.persist();
-            console.log("fsdaxfgwfb");
             const FilePrev = URL.createObjectURL(upload.files[0]);
             setMapPrev(FilePrev);
           }}
         />
         <Box
           pos="fixed"
-          bg="green.500"
+          bg="gray.600"
           width="60vw"
           height="2vh"
-          opacity={showBoardOptions ? 0 : 0.4}
+          opacity={showBoardOptions || showSpriteSelection ? 0 : 0.4}
           top={0}
           onMouseEnter={(e) => setShowBoardOptions(true)}
-        />
-        {/* To show On left  */}
-        <Box
-          pos="fixed"
-          bg="green.500"
-          width="1vw"
-          height="80vh"
-          opacity={showBoardOptions ? 0 : 0.4}
-          top={16}
-          left={0}
-          onMouseEnter={(e) => setShowSpriteSelection(true)}
         />
         {/* To show On right  */}
         <Box
           pos="fixed"
-          bg="green.500"
+          bg="gray.600"
           width="1vw"
           height="80vh"
           top={16}
-          opacity={showBoardOptions ? 0 : 0.4}
+          opacity={showBoardOptions || showSpriteSelection ? 0 : 0.4}
           right={0}
           onMouseEnter={(e) => setShowSpriteSelection(true)}
         />
@@ -209,24 +186,25 @@ export default function Home() {
               bg="black"
               opacity={0.3}
               pos="fixed"
-              width="500%"
-              height="500%"
+              width="full"
+              height="full"
               zIndex="1000"
             />
             <Flex
               align="center"
               justify="center"
               pos="fixed"
-              top={10}
-              left="30vw"
+              top="5vh"
+              left="15vw"
               opacity={1}
-              width="40vw"
+              p="1rem 3rem 0 3rem"
+              width="70vw"
               height="90vh"
               bg="gray.500"
               zIndex="1050"
               direction="column"
             >
-              <Stack spacing={6}>
+              <Stack spacing={4}>
                 <Icon
                   pos="absolute"
                   name="close"
@@ -240,16 +218,28 @@ export default function Home() {
                   zIndex={"1051"}
                 />
 
-                <Image width="30vw" height="75vh" src={mapPrev} />
+                <Image
+                  width="70vw"
+                  maxWidth="100%"
+                  maxHeight="100%"
+                  height="70vh"
+                  src={mapPrev}
+                />
 
-                <Flex justify="center" mb="4vh">
+                <Flex justify="center" mb={-1} align="center">
                   <Stack spacing={2} isInline>
                     <Button
+                      bg="blue.500"
+                      variantColor="blue"
+                      color="white"
                       isLoading={uploading}
                       children="Select a map background"
                       onClick={(e) => upload.click()}
                     />
                     <Button
+                      bg="blue.500"
+                      variantColor="blue"
+                      color="white"
                       children="Upload"
                       isLoading={uploading}
                       onClick={async (e) => {
@@ -270,6 +260,9 @@ export default function Home() {
                       }}
                     />
                     <Button
+                      bg="blue.500"
+                      variantColor="blue"
+                      color="white"
                       children="Cancel"
                       onClick={(e) => setMapUploadModal(null)}
                     />
@@ -298,18 +291,20 @@ export default function Home() {
               }
             />
           )}
-
           <Board
             NumberColumns={numberColumns}
             NumberRows={numberRows}
             SquareSize={squareSize}
             Map={mapPicture}
           />
-          <SpritesSettings
-            NumberColumns={numberColumns}
-            NumberRows={numberRows}
-            SquareSize={squareSize}
-          />
+
+          {sprite.context === "settings" && (
+            <SpritesSettings
+              NumberColumns={numberColumns}
+              NumberRows={numberRows}
+              SquareSize={squareSize}
+            />
+          )}
         </SpriteContext.Provider>
       </Flex>
     </>

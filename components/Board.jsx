@@ -4,7 +4,7 @@ import { Square } from "./Square";
 import { moveSprite } from "../utils/moveSprite";
 import { shadowedSquaresCoordinates } from "../utils/shadowedSquaresCoordinates";
 import io from "socket.io-client";
-import { Grid, Image } from "@chakra-ui/core";
+import { Button, Grid, Image } from "@chakra-ui/core";
 // const socket = io("https://rocky-hamlet-30601.herokuapp.com");
 
 const colors = {
@@ -130,22 +130,24 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
     // this prepares the sprite to move
 
     if (type === "sprite") {
-      spriteRef.current[index].focus();
       setSpriteCondition({ clicked: true, position: index });
-      setPrevSquare(index);
       setSquareWasClicked(true);
+      setPrevSquare(index);
+      if (squareWasClicked) spriteRef.current[index].blur();
     } else {
       setSpriteCondition({ clicked: false, position: index });
     }
+
     if (squareWasClicked) {
       const acomodateBoard = numberArray;
-
       const temp = acomodateBoard[prevSquare].coordinate;
       acomodateBoard[prevSquare].coordinate = acomodateBoard[index].coordinate;
       acomodateBoard[index].coordinate = temp;
       // socket.emit("Board change", acomodateBoard);
       setSquareWasClicked(false);
       setNumberArray(acomodateBoard);
+
+      return;
     }
   };
 
@@ -166,29 +168,40 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
 
   const rotateSprite = (e, index) => {
     e.preventDefault();
-    const spriteWidth = spriteRef.current[index].width;
-    // parseInt(
-    // spriteRef.current[index].style.width.replace("px", "")
-    // );
-    const spriteHeigth = spriteRef.current[index].height;
-    // parseInt(
-    // spriteRef.current[index].style.height.replace("px", "")
-    // );
-    let spriteInformation = {
-      ...numberArray[index],
-      size: [spriteWidth / SquareSize, spriteHeigth / SquareSize],
-    };
-    const spriteChange = moveSprite(spriteInformation, e.key);
-    if (spriteChange) {
-      spriteRef.current[
-        index
-      ].style.transform = `rotate(${spriteChange.rotation}deg) translate(${spriteChange.translation[0]}%,${spriteChange.translation[1]}%)`;
-      numberArray[index] = spriteChange;
-      setSquareWasClicked(false);
-      setRotatingSprite(!rotatingSprite);
-      setNumberArray(numberArray);
-      // socket.emit("Board change", numberArray);
+    const key = e.key;
+    const currentDirection = spriteRef.current[index].style.transform;
+    console.log(currentDirection);
+    if (key === "I" || key === "i") {
+      const wasNegative = currentDirection.match(/scaleX\(-/);
+      if (wasNegative) {
+        spriteRef.current[index].style.transform = "scaleX(-1) scaleY(1)";
+      } else {
+        spriteRef.current[index].style.transform = "scaleX(1) scaleY(1)";
+      }
+    } else if (key === "K" || key === "k") {
+      const wasNegative = currentDirection.match(/scaleX\(-/);
+      if (wasNegative) {
+        spriteRef.current[index].style.transform = "scaleX(-1) scaleY(-1)";
+      } else {
+        spriteRef.current[index].style.transform = "scaleX(1) scaleY(-1)";
+      }
+    } else if (key === "J" || key === "j") {
+      const wasNegative = currentDirection.match(/scaleY\(-/);
+      if (wasNegative) {
+        spriteRef.current[index].style.transform = "scaleX(1) scaleY(-1)";
+      } else {
+        spriteRef.current[index].style.transform = "scaleX(1) scaleY(1)";
+      }
+    } else if (key === "L" || key === "l") {
+      const wasNegative = currentDirection.match(/scaleY\(-/);
+      if (wasNegative) {
+        spriteRef.current[index].style.transform = "scaleX(-1) scaleY(-1)";
+      } else {
+        spriteRef.current[index].style.transform = "scaleX(-1) scaleY(1)";
+      }
     }
+
+    // socket.emit("Board change", numberArray);
   };
 
   // esto da un preview del area que ocupara el sprite
@@ -200,12 +213,23 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
     )
       return;
     if (spriteCondition.clicked) {
+      let widthMultiplier;
+      let heightMultiplier;
+      if (!spriteRef.current[spriteCondition.position]) {
+        widthMultiplier = 1;
+        heightMultiplier = 1;
+      } else {
+        widthMultiplier =
+          spriteRef.current[spriteCondition.position].width / SquareSize;
+        heightMultiplier =
+          spriteRef.current[spriteCondition.position].height / SquareSize;
+      }
       const coordinatesToChange = shadowedSquaresCoordinates(
-        numberArray[spriteCondition.position].size[0],
-        numberArray[spriteCondition.position].size[1],
-        coordinates,
-        numberArray[spriteCondition.position].rotation
+        widthMultiplier,
+        heightMultiplier,
+        coordinates
       );
+      console.log(coordinatesToChange);
       for (const square of numberArray) {
         for (const coordinate of coordinatesToChange) {
           if (
@@ -263,11 +287,8 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
         bgPos="center"
         pgRepeat="no-repeat"
         bgSize="cover"
-        alignContent="start"
-        justifyContent="left"
         height={`${NumberRows * SquareSize}px`}
         width={`${NumberColumns * SquareSize}px`}
-        color="none"
         templateColumns={numberColumns}
         boxSizing="border-box"
       >
@@ -278,35 +299,40 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
                 {square.content !== "" ? (
                   <Image
                     ref={spriteRefUse(index)}
-                    className="sprite"
                     src={square.content}
                     alt="sprite"
                     key={index + 100}
                     onFocus={(e) => {
-                      spriteRef.current[index].style.border = "white solid 4px";
+                      spriteRef.current[index].style.boxShadow =
+                        "0 0 0 5px white";
                       // square.spriteColor = colors.spriteFocus
                     }}
+                    maxWidth="100%"
+                    maxHeight="100%"
                     tabIndex={index}
+                    style={{ transform: "scaleX(1) scaleY(1)" }}
                     width="50px"
                     height="50px"
                     gridArea={`${square.coordinate[0]} / ${square.coordinate[1]} / span ${NumberRows} / span ${NumberColumns}`}
-                    boxShadow={`${square.ofSet[0]}em ${square.ofSet[1]}em 0 0 ${colors.direction} inset`}
                     bg={colors.neutral}
                     zIndex={2 + square.order}
                     onKeyUp={(e) => {
                       rotateSprite(e, index);
                     }}
                     onBlur={(e) => {
-                      spriteRef.current[index].style.border = "";
+                      setTimeout(() => {
+                        if (!spriteRef.current[index]) return;
+
+                        spriteRef.current[index].style.boxShadow = "";
+                      }, 400);
                     }}
                     onClick={(e) => {
-                      console.log(e.target);
+                      setSprite({ ...sprite, context: "none" });
 
                       putSprite(e, index, "sprite");
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault();
-                      e.target.blur();
                       setSprite({
                         content: square.content,
                         horizontalMultplier: square.size[0],
@@ -315,8 +341,10 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
                         type: "neutral",
                         reference: e.target,
                       });
-
-                      //removeSprite(e, index)
+                      setSpriteCondition({
+                        ...spriteCondition,
+                        position: index,
+                      });
                     }}
                   />
                 ) : (
@@ -326,9 +354,18 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
                     Width={squareSize.width}
                     Coordinates={square.coordinate}
                     Color={square.color}
-                    onClick={(e) => putSprite(e, index, "square")}
+                    onClick={(e) => {
+                      setSprite({ ...sprite, context: "none" });
+
+                      putSprite(e, index, "square");
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = "transparent";
+                    }}
                     onMouseEnter={(e) => {
-                      squaresPreview(e, square.coordinate);
+                      e.target.style.backgroundColor = "green";
+
+                      // squaresPreview(e, square.coordinate);
                     }}
                   />
                 )}{" "}
@@ -339,6 +376,20 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
           <></>
         )}
       </Grid>
+      {sprite.context === "settings" && (
+        <Button
+          variantColor="red"
+          children="Delete"
+          pos="fixed"
+          bottom={"22.5vh"}
+          left="36vw"
+          zIndex={2000}
+          onClick={(e) => {
+            setSprite({ ...sprite, context: "none" });
+            removeSprite(e, spriteCondition.position);
+          }}
+        />
+      )}
     </>
   );
 };
