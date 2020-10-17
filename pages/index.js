@@ -50,7 +50,7 @@ export default function Home() {
   const [showSpriteSelection, setShowSpriteSelection] = React.useState(null);
   const [mapPrev, setMapPrev] = React.useState(null);
   const [mapUploadModal, setMapUploadModal] = React.useState(null);
-  const [mapPicture, setMapPicture] = React.useState(null);
+  const [mapPicture, setMapPicture] = React.useState("a");
   const [uploading, setUploading] = React.useState(null);
   // Board options component
 

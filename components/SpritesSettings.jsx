@@ -1,18 +1,14 @@
 import React from "react";
 import { SpriteContext } from "../context/SpriteContext";
+import io from "socket.io-client";
+const socket = io("https://rocky-hamlet-30601.herokuapp.com/");
 import {
   Box,
   Button,
-  Collapse,
   Flex,
-  FormControl,
-  FormLabel,
-  FormErrorMessage,
-  FormHelperText,
   Grid,
   Icon,
   Image,
-  Input,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
@@ -20,10 +16,6 @@ import {
   NumberDecrementStepper,
   Radio,
   RadioGroup,
-  Slider,
-  SliderTrack,
-  SliderFilledTrack,
-  SliderThumb,
   Stack,
   Text,
 } from "@chakra-ui/core";
@@ -46,11 +38,9 @@ export const SpritesSettings = ({ NumberColumns, NumberRows, SquareSize }) => {
   const [defaultValue, setDefaultValue] = React.useState(1);
   const [spriteInformation, setSpriteInformation] = React.useState({
     content: "",
-    horizontalMultplier: "",
-    verticalMultiplier: "",
     context: "settings",
-    type: "neutral",
     reference: "",
+    spriteRefIndex: "",
   });
 
   React.useEffect(() => {
@@ -123,6 +113,14 @@ export const SpritesSettings = ({ NumberColumns, NumberRows, SquareSize }) => {
                     spriteInformation.reference.style.width = `${
                       value * SquareSize
                     }px`;
+
+                    socket.emit("Sprite change", {
+                      Width: value * SquareSize,
+                      Height: sprite.reference.height,
+                      bgColor: sprite.reference.style.backgroundColor,
+                      spriteRefIndex: sprite.spriteRefIndex,
+                    });
+
                     setUpdate(!update);
                   }}
                   bg="green.200"
@@ -145,6 +143,12 @@ export const SpritesSettings = ({ NumberColumns, NumberRows, SquareSize }) => {
                       value * SquareSize
                     }px`;
                     setUpdate(!update);
+                    socket.emit("Sprite change", {
+                      Width: value * SquareSize,
+                      Height: sprite.reference.height,
+                      bgColor: sprite.reference.style.backgroundColor,
+                      spriteRefIndex: sprite.spriteRefIndex,
+                    });
                   }}
                   bg="pink.200"
                   _active={{ bg: "pink.300" }}
@@ -188,6 +192,12 @@ export const SpritesSettings = ({ NumberColumns, NumberRows, SquareSize }) => {
                       value * SquareSize
                     }px`;
                     setUpdate(!update);
+                    socket.emit("Sprite change", {
+                      Width: sprite.reference.width,
+                      Height: value * SquareSize,
+                      bgColor: sprite.reference.style.backgroundColor,
+                      spriteRefIndex: sprite.spriteRefIndex,
+                    });
                   }}
                   bg="green.200"
                   _active={{ bg: "green.300" }}
@@ -208,6 +218,12 @@ export const SpritesSettings = ({ NumberColumns, NumberRows, SquareSize }) => {
                     spriteInformation.reference.style.height = `${
                       value * SquareSize
                     }px`;
+                    socket.emit("Sprite change", {
+                      Width: sprite.reference.width,
+                      Height: value * SquareSize,
+                      bgColor: sprite.reference.style.backgroundColor,
+                      spriteRefIndex: sprite.spriteRefIndex,
+                    });
                     setUpdate(!update);
                   }}
                   bg="pink.200"
@@ -230,13 +246,34 @@ export const SpritesSettings = ({ NumberColumns, NumberRows, SquareSize }) => {
               case "neutral":
                 spriteInformation.reference.style.backgroundColor =
                   colors.neutral;
+
+                socket.emit("Sprite change", {
+                  Width: sprite.reference.width,
+                  Height: sprite.reference.height,
+                  bgColor: colors.neutral,
+                  spriteRefIndex: sprite.spriteRefIndex,
+                });
+
                 break;
               case "enemy":
                 spriteInformation.reference.style.backgroundColor =
                   colors.enemy;
+                socket.emit("Sprite change", {
+                  Width: sprite.reference.width,
+                  Height: sprite.reference.height,
+                  bgColor: colors.enemy,
+                  spriteRefIndex: sprite.spriteRefIndex,
+                });
+
                 break;
               default:
                 spriteInformation.reference.style.backgroundColor = colors.ally;
+                socket.emit("Sprite change", {
+                  Width: sprite.reference.width,
+                  Height: sprite.reference.height,
+                  bgColor: colors.ally,
+                  spriteRefIndex: sprite.spriteRefIndex,
+                });
             }
           }}
           color="blue.700"

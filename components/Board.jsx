@@ -3,9 +3,9 @@ import { SpriteContext } from "../context/SpriteContext";
 import { Square } from "./Square";
 import { moveSprite } from "../utils/moveSprite";
 import { shadowedSquaresCoordinates } from "../utils/shadowedSquaresCoordinates";
-import io from "socket.io-client";
 import { Button, Grid, Image } from "@chakra-ui/core";
-// const socket = io("https://rocky-hamlet-30601.herokuapp.com");
+import io from "socket.io-client";
+const socket = io("https://rocky-hamlet-30601.herokuapp.com/");
 
 const colors = {
   ally: "#137CBD",
@@ -30,35 +30,69 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
 
   const [prevSquare, setPrevSquare] = useState(null);
   const [squareWasClicked, setSquareWasClicked] = useState(false);
-  const [numberArray, setNumberArray] = useState(null);
   const [orderSprites, setOrderSprites] = useState(0);
   const [numberColumns, setNumberColumns] = useState("auto");
   const [rotatingSprite, setRotatingSprite] = useState(false);
-
-  const [squareSize, setSquareSize] = useState({ height: "4em", width: "4em" });
-
+  const [squaresArray, setSquaresArray] = useState([]);
+  const [spritesArray, setSpritesArray] = useState([]);
+  const [mapColumns, setMapColumns] = useState(NumberColumns);
+  const [mapRows, setMapRows] = useState(NumberRows);
+  const [mapBg, setMapBg] = useState(Map);
   // ref
+
   const arr = [...new Array(NumberColumns * NumberRows)].map(
     (_, index) => index
   );
+
   const spriteRef = useRef(arr);
   const spriteRefUse = (index) => (element) => {
     spriteRef.current[index] = element;
   };
+
   // effects
 
   //this setps Up the board size on number of squares
 
-  // useEffect(() => {
-  // socket.on("Board Status", (data) => {
-  // setNumberArray(data);
-  // });
-  // return () => {
-  // socket.off("connect");
-  // socket.off("disconnect");
-  // socket.off("message");
-  // };
-  // });
+  useEffect(() => {
+    socket.on("Sprite change", (sprite) => {
+      if (sprite?.gridArea) {
+        spriteRef.current[
+          sprite.spriteRefIndex
+        ].style.gridArea = `${sprite.gridArea}`;
+      } else if (sprite?.transform) {
+        spriteRef.current[
+          sprite.spriteRefIndex
+        ].style.transform = `${sprite.transform}`;
+      } else {
+        spriteRef.current[
+          sprite.spriteRefIndex
+        ].style.height = `${sprite.Height}px`;
+        spriteRef.current[
+          sprite.spriteRefIndex
+        ].style.width = `${sprite.Width}px`;
+        spriteRef.current[
+          sprite.spriteRefIndex
+        ].style.backgroundColor = `${sprite.bgColor}`;
+      }
+    });
+
+    socket.on("Map Config", ({ shape, mapBgr, columns, rows, squares }) => {
+      setNumberColumns(shape);
+      setMapBg(mapBgr);
+      setMapColumns(columns);
+      setMapRows(rows);
+      setSquaresArray(squares);
+    });
+    socket.on("Sprites Information", (data) => {
+      setSpritesArray(data);
+    });
+
+    return () => {
+      socket.off("connect");
+      socket.off("disconnect");
+      socket.off("message");
+    };
+  });
 
   useEffect(() => {
     let row = 0;
@@ -66,30 +100,27 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
     let array = Array.from(Array(NumberColumns * NumberRows)).map(() => {
       column = column === NumberColumns ? 0 : column;
       column += 1;
-
       row = column === 1 ? row + 1 : row;
-
       return {
-        content: "",
         coordinate: [row, column],
-        size: [0, 0],
         color: colors.boardDefault,
       };
     });
-    setNumberArray(array);
+    setSquaresArray(array);
     let numberOfColumns = "";
 
     for (let i = 0; i < NumberColumns; i++) {
       numberOfColumns += `auto `;
     }
     setNumberColumns(numberOfColumns);
-  }, [NumberColumns, NumberRows]);
-
-  useEffect(() => {
-    const squareSize = SquareSize + "px";
-
-    setSquareSize({ height: squareSize, width: squareSize });
-  }, [SquareSize]);
+    socket.emit("Map Config", {
+      shape: numberOfColumns,
+      mapBgr: Map,
+      columns: NumberColumns,
+      rows: NumberRows,
+      squares: array,
+    });
+  }, [NumberColumns, NumberRows, Map]);
 
   // functions
 
@@ -97,55 +128,56 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
 
   const putSprite = (e, index, type) => {
     // this conditios puts a new sprite on the board
-
+    const xCoordinate = 1 + (index % NumberColumns);
+    const yCoordinate = 1 + (index + 1 - xCoordinate) / NumberColumns;
     if (sprite.context === "map") {
-      const colorType =
-        sprite.type === "neutral"
-          ? colors.neutral
-          : sprite.type === "enemy"
-          ? colors.enemy
-          : colors.ally;
-
-      numberArray[index].content = sprite.content;
-      numberArray[index] = {
-        ...numberArray[index],
-        size: [sprite.horizontalMultiplier, sprite.verticalMultiplier],
-        rotation: 0,
-        translation: [0, 0],
-        ofSet: [0, 1],
-        order: orderSprites,
-        spriteColor: colorType,
-        spriteColorBlur: colorType,
-        color: colors.boardDefault,
-        type: sprite.type,
-      };
+      setSpritesArray([
+        ...spritesArray,
+        {
+          content: sprite.content,
+          order: orderSprites,
+          coordinate: [yCoordinate, xCoordinate],
+        },
+      ]);
+      // setRotatingSprite(!rotatingSprite);
       setOrderSprites(orderSprites + 1);
-      setNumberArray(numberArray);
       setSquareWasClicked(false);
       setSprite({ ...sprite, context: "none" });
-      // socket.emit("Board change", numberArray);
+      socket.emit("Sprites Information", [
+        ...spritesArray,
+        {
+          content: sprite.content,
+          order: orderSprites,
+          coordinate: [yCoordinate, xCoordinate],
+        },
+      ]);
       return;
     }
 
     // this prepares the sprite to move
 
     if (type === "sprite") {
+      if (squareWasClicked) {
+        setSquareWasClicked(false);
+        spriteRef.current[index].blur();
+        return;
+      }
       setSpriteCondition({ clicked: true, position: index });
       setSquareWasClicked(true);
-      setPrevSquare(index);
-      if (squareWasClicked) spriteRef.current[index].blur();
     } else {
       setSpriteCondition({ clicked: false, position: index });
     }
 
     if (squareWasClicked) {
-      const acomodateBoard = numberArray;
-      const temp = acomodateBoard[prevSquare].coordinate;
-      acomodateBoard[prevSquare].coordinate = acomodateBoard[index].coordinate;
-      acomodateBoard[index].coordinate = temp;
-      // socket.emit("Board change", acomodateBoard);
+      spriteRef.current[
+        spriteCondition.position
+      ].style.gridArea = `${yCoordinate} / ${xCoordinate} / span ${NumberRows} / span ${NumberColumns}`;
+
+      socket.emit("Sprite change", {
+        gridArea: `${yCoordinate} / ${xCoordinate} / span ${NumberRows} / span ${NumberColumns}`,
+        spriteRefIndex: spriteCondition.position,
+      });
       setSquareWasClicked(false);
-      setNumberArray(acomodateBoard);
 
       return;
     }
@@ -155,10 +187,15 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
 
   const removeSprite = (e, index) => {
     e.preventDefault();
+    const removingElement = spritesArray.filter(
+      (sprite, position) => position != index
+    );
+    setSpritesArray(removingElement);
+
+    socket.emit("Sprites Information", removingElement);
 
     setOrderSprites(orderSprites - 1);
-    numberArray[index].content = "";
-    setNumberArray(numberArray);
+
     setRotatingSprite(!rotatingSprite);
     setSquareWasClicked(false);
     // socket.emit("Board change", numberArray);
@@ -170,7 +207,7 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
     e.preventDefault();
     const key = e.key;
     const currentDirection = spriteRef.current[index].style.transform;
-    console.log(currentDirection);
+
     if (key === "I" || key === "i") {
       const wasNegative = currentDirection.match(/scaleX\(-/);
       if (wasNegative) {
@@ -201,7 +238,12 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
       }
     }
 
-    // socket.emit("Board change", numberArray);
+    // spriteRef.current[1].style = spriteRef.current[index].style;
+
+    socket.emit("Sprite change", {
+      transform: spriteRef.current[index].style.transform,
+      spriteRefIndex: index,
+    });
   };
 
   // esto da un preview del area que ocupara el sprite
@@ -229,8 +271,7 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
         heightMultiplier,
         coordinates
       );
-      console.log(coordinatesToChange);
-      for (const square of numberArray) {
+      for (const square of squaresArray) {
         for (const coordinate of coordinatesToChange) {
           if (
             square.coordinate[0] === coordinate[1] &&
@@ -240,13 +281,13 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
           }
         }
       }
-      setNumberArray(numberArray);
+      setSquaresArray(squaresArray);
       setRotatingSprite(!rotatingSprite);
       setTimeout(() => {
-        for (const square of numberArray) {
+        for (const square of squaresArray) {
           square.color = colors.boardDefault;
         }
-        setNumberArray(numberArray);
+        setSquaresArray(squaresArray);
       }, 0);
     }
 
@@ -259,7 +300,7 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
       coordinates,
       0
     );
-    for (const square of numberArray) {
+    for (const square of squaresArray) {
       for (const coordinate of coordinatesToChange) {
         if (
           square.coordinate[0] === coordinate[1] &&
@@ -269,13 +310,13 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
         }
       }
     }
-    setNumberArray(numberArray);
+    setSquaresArray(squaresArray);
     setRotatingSprite(!rotatingSprite);
     setTimeout(() => {
-      for (const square of numberArray) {
+      for (const square of squaresArray) {
         square.color = colors.boardDefault;
       }
-      setNumberArray(numberArray);
+      setSquaresArray(squaresArray);
 
       setRotatingSprite(!rotatingSprite);
     }, 0);
@@ -283,97 +324,91 @@ export const Board = ({ NumberColumns, NumberRows, SquareSize, Map }) => {
   return (
     <>
       <Grid
-        bgImage={`url('${Map}')`}
+        bgImage={`url('${mapBg}')`}
         bgPos="center"
         pgRepeat="no-repeat"
         bgSize="cover"
-        height={`${NumberRows * SquareSize}px`}
-        width={`${NumberColumns * SquareSize}px`}
+        height={`${mapRows * SquareSize}px`}
+        width={`${mapColumns * SquareSize}px`}
         templateColumns={numberColumns}
         boxSizing="border-box"
+        border="white solid 1px"
       >
-        {numberArray ? (
+        {squaresArray && (
           <>
-            {numberArray.map((square, index) => (
-              <>
-                {square.content !== "" ? (
-                  <Image
-                    ref={spriteRefUse(index)}
-                    src={square.content}
-                    alt="sprite"
-                    key={index + 100}
-                    onFocus={(e) => {
-                      spriteRef.current[index].style.boxShadow =
-                        "0 0 0 5px white";
-                      // square.spriteColor = colors.spriteFocus
-                    }}
-                    maxWidth="100%"
-                    maxHeight="100%"
-                    tabIndex={index}
-                    style={{ transform: "scaleX(1) scaleY(1)" }}
-                    width="50px"
-                    height="50px"
-                    gridArea={`${square.coordinate[0]} / ${square.coordinate[1]} / span ${NumberRows} / span ${NumberColumns}`}
-                    bg={colors.neutral}
-                    zIndex={2 + square.order}
-                    onKeyUp={(e) => {
-                      rotateSprite(e, index);
-                    }}
-                    onBlur={(e) => {
-                      setTimeout(() => {
-                        if (!spriteRef.current[index]) return;
+            {squaresArray.map((square, index) => (
+              <Square
+                key={index}
+                Height={SquareSize}
+                Width={SquareSize}
+                Coordinates={square.coordinate}
+                Color={square.color}
+                onClick={(e) => {
+                  setSprite({ ...sprite, context: "none" });
 
-                        spriteRef.current[index].style.boxShadow = "";
-                      }, 400);
-                    }}
-                    onClick={(e) => {
-                      setSprite({ ...sprite, context: "none" });
-
-                      putSprite(e, index, "sprite");
-                    }}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      setSprite({
-                        content: square.content,
-                        horizontalMultplier: square.size[0],
-                        verticalMultiplier: square.size[1],
-                        context: "settings",
-                        type: "neutral",
-                        reference: e.target,
-                      });
-                      setSpriteCondition({
-                        ...spriteCondition,
-                        position: index,
-                      });
-                    }}
-                  />
-                ) : (
-                  <Square
-                    key={index}
-                    Height={squareSize.height}
-                    Width={squareSize.width}
-                    Coordinates={square.coordinate}
-                    Color={square.color}
-                    onClick={(e) => {
-                      setSprite({ ...sprite, context: "none" });
-
-                      putSprite(e, index, "square");
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.backgroundColor = "transparent";
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.backgroundColor = "green";
-
-                      // squaresPreview(e, square.coordinate);
-                    }}
-                  />
-                )}{" "}
-              </>
+                  putSprite(e, index, "square");
+                }}
+                onMouseEnter={(e) => {
+                  e.preventDefault();
+                  squaresPreview(e, square.coordinate);
+                }}
+              />
             ))}
           </>
-        ) : (
-          <></>
+        )}
+
+        {spritesArray && (
+          <>
+            {spritesArray.map((sprite, index) => (
+              <Image
+                ref={spriteRefUse(index)}
+                src={sprite.content}
+                alt="sprite"
+                key={index + 100}
+                onFocus={(e) => {
+                  spriteRef.current[index].style.boxShadow = "0 0 0 5px white";
+                  // sprite.spriteColor = colors.spriteFocus;
+                }}
+                maxWidth="100%"
+                maxHeight="100%"
+                tabIndex={index}
+                style={{ transform: "scaleX(1) scaleY(1)" }}
+                width="50px"
+                height="50px"
+                gridArea={`${sprite.coordinate[0]} / ${sprite.coordinate[1]} / span ${NumberRows} / span ${NumberColumns}`}
+                bg={colors.neutral}
+                zIndex={2 + sprite.order}
+                onKeyUp={(e) => {
+                  rotateSprite(e, index);
+                }}
+                onBlur={(e) => {
+                  setTimeout(() => {
+                    if (!spriteRef.current[index]) return;
+
+                    spriteRef.current[index].style.boxShadow = "";
+                  }, 400);
+                }}
+                onClick={(e) => {
+                  setSprite({ ...sprite, context: "none" });
+
+                  putSprite(e, index, "sprite");
+                }}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  setSprite({
+                    content: sprite.content,
+                    context: "settings",
+                    reference: e.target,
+                    spriteRefIndex: index,
+                  });
+                  setSpriteCondition({
+                    ...spriteCondition,
+                    position: index,
+                  });
+                }}
+              />
+            ))}
+          </>
         )}
       </Grid>
       {sprite.context === "settings" && (

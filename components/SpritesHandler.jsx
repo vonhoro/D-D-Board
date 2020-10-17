@@ -320,7 +320,7 @@ export const SpritesHandler = ({
               <>
                 <Image
                   onClick={(e) => spriteCliked(index)}
-                  key={89 + 1 * index}
+                  key={2018 + 1 * index}
                   width="50px"
                   height="50px"
                   bg={sprite.color}

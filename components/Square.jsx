@@ -7,13 +7,11 @@ export const Square = ({
   Color,
   onClick,
   onMouseEnter,
-  onMouseLeave,
 }) => {
   return (
     <Box
-      borderColor="gray.100"
-      border="1px"
-      borderStyle="solid"
+      border="white solid 1px"
+      color="transparent"
       boxSizing="border-box"
       style={{
         height: Height,
@@ -23,7 +21,6 @@ export const Square = ({
       }}
       onClick={onClick}
       onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
     >
       {""}
     </Box>

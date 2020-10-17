@@ -1,12 +1,4 @@
-// type Coordinates={
-// Width:number;
-// Heigth:number;
-// currentCoordinates:Array<number>;
-
-// }
-
 export const shadowedSquaresCoordinates = (Width, Heigth, OldCoordinates) => {
-  console.log(Width);
   const spriteWidth = Width;
   const spriteHeigth = Heigth;
   const coordinates = OldCoordinates;
